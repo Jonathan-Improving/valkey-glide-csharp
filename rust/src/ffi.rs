@@ -135,6 +135,10 @@ pub struct ConnectionConfig {
     pub read_only: bool,
     pub has_client_side_cache_config: bool,
     pub client_side_cache_config: ClientSideCacheConfig,
+
+    /// Optional library name override for CLIENT SETINFO LIB-NAME.
+    /// When null, uses the compiled-in GLIDE_NAME default.
+    pub lib_name: *const c_char,
     /*
     TODO below
     pub periodic_checks: Option<PeriodicCheck>,
@@ -250,7 +254,8 @@ pub(crate) unsafe fn create_connection_request(
             None
         },
         client_name: unsafe { ptr_to_opt_str(config.client_name) }?,
-        lib_name: Some(env!("GLIDE_NAME").to_string()),
+        lib_name: unsafe { ptr_to_opt_str(config.lib_name) }?
+            .or_else(|| Some(env!("GLIDE_NAME").to_string())),
         authentication_info: if config.has_authentication_info {
             let auth_info = config.authentication_info;
             let iam_config = if auth_info.has_iam_credentials {

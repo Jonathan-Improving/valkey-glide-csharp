@@ -219,7 +219,8 @@ internal partial class FFI
             uint? pubSubReconciliationIntervalMs,
             CompressionConfig? compressionConfig,
             bool readOnly,
-            ClientSideCacheConfig? clientSideCacheConfig)
+            ClientSideCacheConfig? clientSideCacheConfig,
+            string? libName)
         {
             _request = new()
             {
@@ -255,6 +256,7 @@ internal partial class FFI
                 ReadOnly = readOnly,
                 HasClientSideCacheConfig = clientSideCacheConfig.HasValue,
                 ClientSideCacheConfig = clientSideCacheConfig ?? default,
+                LibName = libName,
             };
         }
 
@@ -1133,6 +1135,9 @@ internal partial class FFI
         [MarshalAs(UnmanagedType.U1)]
         public bool HasClientSideCacheConfig;
         public ClientSideCacheConfig ClientSideCacheConfig;
+
+        [MarshalAs(UnmanagedType.LPStr)]
+        public string? LibName;
 
         // TODO more config params, see ffi.rs
     }

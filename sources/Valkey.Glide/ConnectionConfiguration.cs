@@ -78,7 +78,7 @@ public abstract class ConnectionConfiguration
             get
             {
                 string baseName = LibName ?? DefaultLibName;
-                return ClientInfoTag is not null
+                return !string.IsNullOrEmpty(ClientInfoTag)
                     ? $"{baseName}({ClientInfoTag})"
                     : baseName;
             }

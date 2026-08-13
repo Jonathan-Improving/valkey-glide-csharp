@@ -254,6 +254,8 @@ pub(crate) unsafe fn create_connection_request(
             None
         },
         client_name: unsafe { ptr_to_opt_str(config.client_name) }?,
+        // Fallback: C# always provides ResolvedLibName, but kept defensively
+        // in case the FFI contract changes.
         lib_name: unsafe { ptr_to_opt_str(config.lib_name) }?
             .or_else(|| Some(env!("GLIDE_NAME").to_string())),
         authentication_info: if config.has_authentication_info {

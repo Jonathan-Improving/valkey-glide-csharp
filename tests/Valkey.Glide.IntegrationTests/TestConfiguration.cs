@@ -24,9 +24,18 @@ public class TestConfiguration : IDisposable
     public static Address STANDALONE_ADDRESS => STANDALONE_ADDRESSES.First();
     public static Address CLUSTER_ADDRESS => CLUSTER_ADDRESSES.First();
 
-    // Environment variable names for providing server endpoints.
+    // Environment variable names for providing server endpoints. The module-test harness
+    // (utils/run-modules-ci-locally.sh / utils/start-valkey-docker-modules.sh) exports
+    // MODULES_STANDALONE_ENDPOINT / MODULES_CLUSTER_ENDPOINTS rather than these -- fall back to
+    // those so the ~40 existing ServerModules integration tests (FtSearchTests, FtInfoTests,
+    // etc.) actually run against a real module-loaded server when invoked under that harness,
+    // instead of silently skipping through ModuleUtils.SkipIfSearchModuleNotAvailableAsync against
+    // whatever modules-free server this project's own ServerManager starts (H4: previously, these
+    // tests never ran against a module in any configuration this port or its CI ever exercised).
     private const string StandaloneEndpointsEnvVar = "standalone-endpoints";
     private const string ClusterEndpointsEnvVar = "cluster-endpoints";
+    private const string ModulesStandaloneEndpointEnvVar = "MODULES_STANDALONE_ENDPOINT";
+    private const string ModulesClusterEndpointsEnvVar = "MODULES_CLUSTER_ENDPOINTS";
 
     private static readonly object LockObject = new();
 
@@ -361,8 +370,10 @@ public class TestConfiguration : IDisposable
     {
         TLS = Environment.GetEnvironmentVariable("tls") == "true";
 
-        var standaloneEndpoints = Environment.GetEnvironmentVariable(StandaloneEndpointsEnvVar);
-        var clusterEndpoints = Environment.GetEnvironmentVariable(ClusterEndpointsEnvVar);
+        var standaloneEndpoints = Environment.GetEnvironmentVariable(StandaloneEndpointsEnvVar)
+            ?? Environment.GetEnvironmentVariable(ModulesStandaloneEndpointEnvVar);
+        var clusterEndpoints = Environment.GetEnvironmentVariable(ClusterEndpointsEnvVar)
+            ?? Environment.GetEnvironmentVariable(ModulesClusterEndpointsEnvVar);
 
         if (standaloneEndpoints is not null || clusterEndpoints is not null)
         {
